@@ -1,4 +1,4 @@
-FROM node:latest as build
+FROM node:20 as build
 
 ARG VITE_BACKEND_URL
 

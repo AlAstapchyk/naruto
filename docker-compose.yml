@@ -10,6 +10,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    mem_limit: 50m
 
   backend:
     build: ./backend
@@ -23,6 +24,7 @@ services:
       - POSTGRES_PORT=${POSTGRES_PORT}
     depends_on:
       - db
+    mem_limit: 100m
 
   frontend:
     build:
@@ -31,3 +33,4 @@ services:
         - VITE_BACKEND_URL=${VITE_BACKEND_URL}
     ports:
       - "80:80"
+    mem_limit: 20m
