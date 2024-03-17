@@ -31,7 +31,7 @@ export async function incrementElementNumber(elId: number) {
   return await pool.query(`UPDATE data SET number = number + 1 WHERE id = ${elId}`);
 }
 
-export async function testReq() {
+export async function createTableReq() {
   try {
     await pool
       .query(
