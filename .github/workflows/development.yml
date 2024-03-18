@@ -13,23 +13,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Build
+      # - name: Build
+      #   run: |
+      #     docker-compose build
+
+      # - name: Test
+      #   run: |
+      #     docker-compose run backend npm test
+
+      - name: Install sshpass
         run: |
-          docker-compose build
+          apt-get update && apt-get install -y sshpass
+
+      - name: Deploy
+        run: |
+          sshpass -p "${{ secrets.DEV_SERVER_PASSWORD }}" \
+          ssh -o StrictHostKeyChecking=no \
+          ${{ secrets.DEV_SERVER_USERNAME }}@${{ secrets.DEV_SERVER_HOST }} \
+          'cd ~/apps/naruto && \
+          git pull origin development && \
+          git checkout development && \
+
+          export POSTGRES_USER=${{ secrets.DEV_POSTGRES_USER }} && \
+          export POSTGRES_PASSWORD=${{ secrets.DEV_POSTGRES_PASSWORD }} && \
+          export POSTGRES_DB=${{ secrets.DEV_POSTGRES_DB }} && \
+          export POSTGRES_HOST=${{ secrets.DEV_POSTGRES_HOST }} && \
+          export POSTGRES_PORT=${{ secrets.DEV_POSTGRES_PORT }} && \
+          export VITE_BACKEND_URL=${{ secrets.DEV_VITE_BACKEND_URL }} && \
+
+          docker-compose down && \
+          docker-compose up -d'
 
       - name: Test
         run: |
           docker-compose run backend npm test
-
-      - name: Deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.DEV_SERVER_HOST }}
-          username: ${{ secrets.DEV_SERVER_USERNAME }}
-          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/apps/naruto
-            git pull origin development
-            git checkout development
-            docker-compose down
-            docker-compose up -d
