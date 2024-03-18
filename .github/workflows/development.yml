@@ -28,7 +28,8 @@ jobs:
           username: ${{ secrets.DEV_SERVER_USERNAME }}
           key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
           script: |
-            cd /apps/naruto
-            git pull origin master
+            cd ~/apps/naruto
+            git pull origin development
+            git checkout development
             docker-compose down
             docker-compose up -d
