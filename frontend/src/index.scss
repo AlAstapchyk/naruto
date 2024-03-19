@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background-color: rgb(50, 50, 50);
+  color: whitesmoke;
+}
+
+button {
+  border-radius: 1rem;
+}
+
+h1 {
+  font-family: cursive, sans-serif; /* Use a cursive font family as fallback */
+  font-style: italic;
+  font-size: 3rem;
+}
+
+.current-color {
+  box-shadow: inset 0 0 2rem black;
+}
+
+.black-button {
+  background-color: black;
+  color: whitesmoke;
+  border-radius: 1rem;
+  border: solid 2px white;
+}

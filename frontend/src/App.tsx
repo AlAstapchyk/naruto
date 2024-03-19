@@ -1,103 +1,141 @@
-import { useState } from 'react';
 import axios from "axios";
-import "./App.scss";
+import { useState } from "react";
 
-interface IData {
-  id?: number,
-  name: string,
-  number: number
-}
+type TColor = "red" | "orange" | "yellow" | "lime" | "green" | "cyan" | "blue" | "purple" | "pink";
+type TBgColor =
+  | "bg-red-500"
+  | "bg-orange-500"
+  | "bg-yellow-500"
+  | "bg-lime-500"
+  | "bg-green-500"
+  | "bg-cyan-500"
+  | "bg-blue-500"
+  | "bg-purple-500"
+  | "bg-pink-500";
+const colors: TColor[] = [
+  "red",
+  "orange",
+  "yellow",
+  "lime",
+  "green",
+  "cyan",
+  "blue",
+  "purple",
+  "pink",
+];
+const bgColors: TBgColor[] = [
+  "bg-red-500",
+  "bg-orange-500",
+  "bg-yellow-500",
+  "bg-lime-500",
+  "bg-green-500",
+  "bg-cyan-500",
+  "bg-blue-500",
+  "bg-purple-500",
+  "bg-pink-500",
+];
+
+// interface ICell {
+//   number: number,
+//   color: TColor
+// }
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [text, setText] = useState<string>();
-  const [data, setData] = useState<IData[]>();
-  const [element, setElement] = useState<IData>();
+  const [placedColors, setPlacedColors] = useState<TColor[]>([]);
+  const [currentColor, setCurrentColor] = useState<TColor>();
 
-  function fetchText() {
-    fetch(import.meta.env.VITE_BACKEND_URL + "/hello")
-      .then(res => res.json())
-      .then(data => {
-        setText(data.data);
-        console.log(data)
+  const loadCells = async () => {
+    const cellsCollors = (await axios.get(import.meta.env.VITE_BACKEND_URL + "/cells")).data as TColor[];
+    console.log(cellsCollors);
+    setPlacedColors(cellsCollors);
+  }
+
+  const saveCurrentCells = async () => {
+    console.log(placedColors)
+    await axios.post(import.meta.env.VITE_BACKEND_URL + "/cells", placedColors)
+      .then(response => {
+        // Handle successful response
+        console.log('Response:', response.data);
       })
       .catch(error => {
-        console.error('Error fetching hello:', error);
+        // Handle error
+        console.error('Error:', error);
       });
   }
 
-  function fetchData() {
-    fetch(import.meta.env.VITE_BACKEND_URL + "/data")
-      .then(res => res.json())
-      .then((data: IData[]) => {
-        setData(data);
-        console.log(data)
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  }
+  const placeCurrentColor = (cellIndex: number) => {
+    const newPlacedColors: TColor[] = placedColors;
+    if (!currentColor) throw new Error();
+    newPlacedColors[cellIndex] = currentColor;
+    console.log(newPlacedColors);
+    setPlacedColors([ ...newPlacedColors ]);
+  };
 
-  async function fetchElement(elId: number) {
-    const response = await axios.get(import.meta.env.VITE_BACKEND_URL + `/data/${elId}`)
-      .catch(error => {
-        console.error('Error incrementing data:', error);
-      });
-    setElement(response?.data);
-
-    console.log(response)
-
-    return response;
-  }
-
-  async function incrementElementNumber(elId: number) {
-    const response = await axios.post(import.meta.env.VITE_BACKEND_URL + `/data/${elId}/increment`)
-      .catch(error => {
-        console.error('Error incrementing data:', error);
-      });
-
-    return response;
-  }
+  const getBgColorByColor = (color: TColor): TBgColor | "" => {
+    const indexOfColor = colors.indexOf(color);
+    if (indexOfColor !== -1) return bgColors[indexOfColor];
+    else return "";
+  };
 
   return (
-    <div className='flex w-[10rem] mx-auto'>
-      {import.meta.env.VITE_BACKEND_URL}
-      <br/>
-      <button className='red cursor-pointer' onClick={() => setCount((count) => count + 1)}>
-        count is {count}
-      </button>
-      <button className='red cursor-pointer' onClick={fetchText}>
-        Fetch text
-      </button>
-      <button className='red cursor-pointer' onClick={fetchData}>
-        Fetch data
-      </button>
-      <h1 className='black'>{text}</h1>
-      <h1>Elements:</h1>
-      <ul>
-        {data?.map(el =>
-          <li>{`${el.id}. ${el.name} -- ${el.number}`}</li>
-        )}
-      </ul>
+    <div className="flex mx-auto flex-col max-w-[50rem] w-fit">
+      <h1 className="flex mx-auto my-4 font-bold">Naruto Colors</h1>
 
-      <hr></hr>
+      <button onClick={loadCells} className="black-button mx-auto max-w-[10rem] w-[10rem] p-2 @extend hover:scale-110 active:scale-95 transition duration-200">Load cells</button>
 
-      <button className='red cursor-pointer' onClick={() => fetchElement(1)}>
-        Fetch element with id = 1
-      </button>
-      <button className='red cursor-pointer' onClick={() => incrementElementNumber(1)}>
-        Increment element with id = 1
-      </button>
-      <button className='red cursor-pointer' onClick={() => fetchElement(2)}>
-        Fetch element with id = 2
-      </button>
-      <button className='red cursor-pointer' onClick={() => incrementElementNumber(2)}>
-        Increment element with id = 2
-      </button>
-      <h1>Element:</h1>
-      <p>{JSON.stringify(element)}</p>
+      <div className="choose-color">
+        <h2 className="text-3xl flex mx-auto my-4">
+          {currentColor ? "Chosen color: " + currentColor : "Choose color:"}
+        </h2>
+        <ul className="flex gap-2 flex-wrap">
+          {colors.map((_, i) => (
+            <li className="w-16 h-16" key={colors[i]}>
+              <button
+                className={
+                  `${bgColors[i]} w-full h-full hover:scale-105 active:scale-95 transition duration-200 shadow-md` +
+                  (currentColor === colors[i] ? " current-color" : "")
+                }
+                onClick={() => {
+                  setCurrentColor(colors[i]);
+                }}
+              >
+                {colors[i]}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {currentColor || placedColors.length ? (
+        <div className="place-color mt-8">
+          <h2 className="text-3xl flex mx-auto mb-8">Place color to cell:</h2>
+          <ul className="grid gap-4 grid-cols-3 m-auto max-w-72">
+            {new Array(9).fill(undefined).map((_, i) => (
+              <li className="flex" key={i + 1}>
+                <button
+                  onClick={() => {
+                    placeCurrentColor(i);
+                  }}
+                  className={`font-bold text-3xl w-full h-16 border-white border-2 hover:scale-105 active:scale-95 transition duration-200 ${getBgColorByColor(
+                    placedColors[i]
+                  )}`}
+                >
+                  {i + 1} 
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex mx-auto mt-12">
+            <button onClick={() => setPlacedColors([])} className="black-button mx-auto max-w-[10rem] w-[10rem] p-2 @extend hover:scale-110 active:scale-95 transition duration-200">Clear cells</button>
+            <button onClick={saveCurrentCells} className="black-button mx-auto max-w-[10rem] w-[10rem] @extend hover:scale-110 active:scale-95 transition duration-200">Save cells</button>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
